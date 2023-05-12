@@ -18,9 +18,9 @@ const DEFAULT_KEY_FLAGS = {
   referrerPolicy: true,
   url: true,
   body: true,
-}
+};
 
-let key_flags = DEFAULT_KEY_FLAGS;
+let keyFlags = DEFAULT_KEY_FLAGS;
 
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
@@ -54,15 +54,15 @@ function getHeadersCacheKeyJson(headersObj) {
   return Object.fromEntries(
     Object.entries(headersObj)
       .map(([key, value]) => [key.toLowerCase(), value])
-      .filter(([key, value]) => 
-        (key !== 'cache-control' || value !== 'only-if-cached') && 
-        /* Either: 
-          * we're just including headers entire (if key_flags.headers == false we shouldn't be here anyway)
-          * or key_flags.headers is an object and doesn't include a directive for this header key (in which case include it by default)
+      .filter(([key, value]) => (key !== 'cache-control' || value !== 'only-if-cached')
+        /* Either:
+          * we're just including headers entire (if key_flags.headers == false
+            we shouldn't be here anyway),
+          * or key_flags.headers is an object and doesn't include a directive for this header key
+            (in which case include it by default),
           * or key_flags.headers is an object and we're not explicitly excluding this header key
           */
-        (typeof key_flags.headers === 'boolean' || !key_flags.headers.hasOwnProperty(key) || key_flags.headers[key])
-      )
+        && (typeof keyFlags.headers === 'boolean' || !Object.prototype.hasOwnProperty.call(keyFlags.headers, key) || keyFlags.headers[key])),
   );
 }
 
@@ -88,17 +88,17 @@ function getRequestCacheKey(req) {
   const headersPojo = Object.fromEntries([...req.headers.entries()]);
 
   return {
-    cache: key_flags['cache'] ? req.cache : '',
-    credentials: key_flags['credentials'] ? req.credentials : '',
-    destination: key_flags['destination'] ? req.destination : '',
-    headers: key_flags['headers'] ? getHeadersCacheKeyJson(headersPojo) : '',
-    integrity: key_flags['integrity'] ? req.integrity : '',
-    method: key_flags['method'] ? req.method : '',
-    redirect: key_flags['redirect'] ? req.redirect : '',
-    referrer: key_flags['referrer'] ? req.referrer : '',
-    referrerPolicy: key_flags['referrerPolicy'] ? req.referrerPolicy : '',
-    url: key_flags['url'] ? req.url : '',
-    body: key_flags['body'] ? getBodyCacheKeyJson(req.body) : '',
+    cache: keyFlags.cache ? req.cache : '',
+    credentials: keyFlags.credentials ? req.credentials : '',
+    destination: keyFlags.destination ? req.destination : '',
+    headers: keyFlags.headers ? getHeadersCacheKeyJson(headersPojo) : '',
+    integrity: keyFlags.integrity ? req.integrity : '',
+    method: keyFlags.method ? req.method : '',
+    redirect: keyFlags.redirect ? req.redirect : '',
+    referrer: keyFlags.referrer ? req.referrer : '',
+    referrerPolicy: keyFlags.referrerPolicy ? req.referrerPolicy : '',
+    url: keyFlags.url ? req.url : '',
+    body: keyFlags.body ? getBodyCacheKeyJson(req.body) : '',
   };
 }
 
@@ -109,7 +109,7 @@ export function getCacheKey(resource, init = {}) {
 
   const initCacheKeyJson = {
     ...init,
-    headers: key_flags['headers'] ? getHeadersCacheKeyJson(init.headers || {}) : '',
+    headers: keyFlags.headers ? getHeadersCacheKeyJson(init.headers || {}) : '',
   };
 
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
@@ -192,8 +192,7 @@ function createFetchWithCache(cache, options = {}) {
   const fetchCache = (...args) => getResponse(cache, args);
   fetchCache.withCache = createFetchWithCache;
 
-  key_flags = Object.assign(DEFAULT_KEY_FLAGS, options.keyFlags);
-  
+  keyFlags = Object.assign(DEFAULT_KEY_FLAGS, options.keyFlags);
   return fetchCache;
 }
 
