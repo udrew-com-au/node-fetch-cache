@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mistval/node-fetch-cache.git"
+    "url": "git+https://github.com/udrew-com-au/node-fetch-cache.git"
   },
   "keywords": [
     "node",
